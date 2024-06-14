@@ -16,6 +16,82 @@
 </head>
 <body>
   <h1>Support Vector Machines (SVMs)</h1>
-  <p>This is a simple webpage about SVMs.</p>
+  <p># Import necessary libraries  
+import pandas as pd  
+from nltk.corpus import stopwords  
+from nltk.tokenize import word_tokenize  
+import string  
+import re  
+from sklearn.model_selection import train_test_split  
+from sklearn.feature_extraction.text import TfidfVectorizer  
+from sklearn.svm import LinearSVC  
+from sklearn.metrics import accuracy_score, classification_report  
+from collections import Counter  
+  
+# Task 1: Data Loading and Exploration, Data Preprocessing  
+# Load the IMDB reviews dataset  
+data = pd.read_csv('imdb.csv')  
+  
+# Explore the structure, columns, and initial samples of the dataset  
+print(data.info())  
+print(data.head())  
+print(data.describe())  
+  
+# Data Preprocessing function  
+def clean_text(text):  
+    # Remove HTML tags  
+    text = re.sub(r'<.*?>', '', text)  
+    # Remove punctuations  
+    text = text.translate(str.maketrans('', '', string.punctuation))  
+    # Tokenize text  
+    tokens = word_tokenize(text.lower())  
+    # Remove stopwords  
+    tokens = [word for word in tokens if word not in stopwords.words('english')]  
+    # Join tokens back into a string  
+    return ' '.join(tokens)  
+  
+# Apply the clean_text function on the 'review' column  
+data['clean_review'] = data['review'].apply(clean_text)  
+  
+# Task 2: TF-IDF Vectorization and Data Split  
+# Create an instance of TF-IDF Vectorizer  
+tfidf_vectorizer = TfidfVectorizer(max_features=5000)  
+  
+# Fit and transform the data  
+X_tfidf = tfidf_vectorizer.fit_transform(data['clean_review'])  
+  
+# Split the dataset into training and testing  
+X_train, X_test, y_train, y_test = train_test_split(X_tfidf, data['sentiment'], test_size=0.2, random_state=42)  
+  
+# Task 3: Sentiment Analysis Model Building  
+# Initialize SVM classifier  
+svm = LinearSVC(random_state=42)  
+  
+# Fit the training data to the classifier  
+svm.fit(X_train, y_train)  
+  
+# Gather the predictions against the testing data  
+y_pred = svm.predict(X_test)  
+  
+# Task 5: Model Evaluation  
+# Evaluate the score for predictions against the testing data  
+accuracy = accuracy_score(y_test, y_pred)  
+print(f'Accuracy: {accuracy}')  
+  
+# Get the classification report  
+report = classification_report(y_test, y_pred, output_dict=True)  
+print(report)  
+  
+# Task 6: Word Frequency Analysis, Average Word Length Calculation  
+# Get the most common Top 10 words from the cleaned review data  
+words = word_tokenize(' '.join(data['clean_review']))  
+word_counts = Counter(words)  
+wc_dict = dict(word_counts.most_common(10))  
+print(wc_dict)  
+  
+# Calculate Average Word Length  
+avg_word_length = sum(len(word) for word in words) / len(words)  
+print(f'Average Word Length: {avg_word_length}')  
+</p>
 </body>
 </html>
